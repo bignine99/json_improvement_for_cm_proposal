@@ -30,7 +30,10 @@ import {
   ShieldCheck,
   Timer,
   ArrowLeftRight,
-  Clock
+  Clock,
+  Eye,
+  EyeOff,
+  Code2
 } from 'lucide-react';
 
 interface DataCardProps {
@@ -225,6 +228,7 @@ export const DataCard: React.FC<DataCardProps> = ({
   const [copyAllStatus, setCopyAllStatus] = useState(false);
   const [activeSectionExplorer, setActiveSectionExplorer] = useState<string | null>(null);
   const [showComparison, setShowComparison] = useState(false);
+  const [showJsonPreview, setShowJsonPreview] = useState(false);
   const [showSuccessFlash, setShowSuccessFlash] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const prevLoadingRef = useRef(loading);
@@ -324,6 +328,17 @@ export const DataCard: React.FC<DataCardProps> = ({
             </div>
           )}
 
+          {/* ─── JSON Preview Toggle ─── */}
+          <button
+            onClick={() => setShowJsonPreview(!showJsonPreview)}
+            className={`px-3 py-1.5 rounded-sm text-[9px] font-black uppercase transition-all border flex items-center gap-1.5 ${showJsonPreview
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                : 'bg-white/5 hover:bg-emerald-500/10 text-white/50 hover:text-emerald-300 border-white/5 hover:border-emerald-500/20'
+              }`}
+          >
+            {showJsonPreview ? <EyeOff size={11} /> : <Eye size={11} />} Preview
+          </button>
+
           {/* ─── Before/After Toggle (#6) ─── */}
           {originalRecord && (
             <button
@@ -353,6 +368,41 @@ export const DataCard: React.FC<DataCardProps> = ({
 
       <div className="p-10 space-y-16 relative">
         <div className="absolute inset-0 bg-[radial-gradient(#1A1A1A_1px,transparent_1px)] [background-size:30px_30px] opacity-10 pointer-events-none"></div>
+
+        {/* ─── JSON Preview Panel ─── */}
+        {showJsonPreview && (
+          <div className="relative z-10 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center justify-between mb-6 border-b border-[#222] pb-4">
+              <div className="flex items-center gap-3">
+                <Code2 size={16} className="text-emerald-400/50" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400/70">Enhanced Result — JSON Preview</h3>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(JSON.stringify(data.resolved_data, null, 2));
+                  setCopyAllStatus(true);
+                  setTimeout(() => setCopyAllStatus(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-sm text-[9px] font-black uppercase transition-all border border-emerald-500/20"
+              >
+                {copyAllStatus ? <Check size={10} /> : <Copy size={10} />}
+                {copyAllStatus ? 'Copied!' : 'Copy JSON'}
+              </button>
+            </div>
+            <div className="bg-[#050505] border border-emerald-500/20 rounded-sm overflow-hidden shadow-[0_0_30px_rgba(16,185,129,0.05)]">
+              <div className="bg-[#0A0A0A] px-6 py-3 border-b border-[#1A1A1A] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500/50 rounded-full"></div>
+                  <span className="text-[9px] font-mono text-[#555]">resolved_data.json</span>
+                </div>
+                <span className="text-[8px] font-mono text-[#333]">{JSON.stringify(data.resolved_data).length} chars</span>
+              </div>
+              <pre className="p-8 font-mono text-[12px] text-emerald-300/80 leading-[1.8] overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar whitespace-pre-wrap break-words">
+{JSON.stringify(data.resolved_data, null, 2)}
+              </pre>
+            </div>
+          </div>
+        )}
 
         {/* ─── Before/After Comparison View (#6) ─── */}
         {showComparison && originalRecord && (
